@@ -14,10 +14,11 @@ from bot.queries.utils import \
 
 async def query_events_by_tg_id(
         session: AsyncSession, tg_id,
-        date_today: date
+        date_: date
         ):
-    date_str = date_today.strftime("%Y-%m-%d")
-    day_of_week = date_today.weekday()
+    date_str = date_.strftime("%Y-%m-%d")
+    day_of_week = date_.weekday()
+    print(day_of_week)
     stmt = (
         select(Table)
         .filter(
@@ -36,5 +37,5 @@ async def query_events_by_tg_id(
 
     return formatting_a_day_schedule_for_sending_a_message(
         query,
-        date_today
+        date_
     )

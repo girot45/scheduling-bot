@@ -30,15 +30,20 @@ month_by_index = {
 
 def formatting_a_day_schedule_for_sending_a_message(
         query,
-        date_today: date,
+        date_: date,
 ):
-    day_of_week = date_today.weekday()
-    day = date_today.day
-    month = date_today.month
+    day_of_week = date_.weekday()
+    day = date_.day
+    month = date_.month
     message_for_day = f"{day_of_week_by_index[day_of_week]} {day} " \
                      f"{month_by_index[month - 1]}\n\n"
+    table_str = ""
     for index, row in enumerate(query):
         event_str = f"С {row.timestart} до {row.timeend}\n" \
                     f"{row.event}\n\n"
-        message_for_day += event_str
+        table_str += event_str
+    if table_str:
+        message_for_day += table_str
+    else:
+        message_for_day += "На сегодня никаких планов"
     return message_for_day
