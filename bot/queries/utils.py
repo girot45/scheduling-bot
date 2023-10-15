@@ -1,7 +1,4 @@
-import time
 from datetime import date
-import locale
-locale.setlocale(locale.LC_TIME, 'ru_RU')
 
 day_of_week_by_index = {
     0: "Понедельник",
