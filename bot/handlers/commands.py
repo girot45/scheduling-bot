@@ -12,7 +12,7 @@ router_commands = Router()
 async def start(message: types.Message):
 
     await message.answer(
-        "Привет. Нажми на /menu.",
+        "Главное меню",
         reply_markup=main_menu_buttons()
     )
 
