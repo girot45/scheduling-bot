@@ -18,10 +18,7 @@ async def main():
 
 
 try:
-    print("bot start")
     asyncio.run(main())
-except exceptions.CancelledError or KeyboardInterrupt:
+except Exception:
     import traceback
     logger.warning(traceback.format_exc())
-finally:
-    print(123)

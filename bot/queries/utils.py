@@ -35,15 +35,21 @@ def formatting_a_day_schedule_for_sending_a_message(
     day_of_week = date_.weekday()
     day = date_.day
     month = date_.month
-    message_for_day = f"{day_of_week_by_index[day_of_week]} {day} " \
+    message_head = f"{day_of_week_by_index[day_of_week]} {day} " \
                      f"{month_by_index[month - 1]}\n\n"
-    table_str = ""
+    events_str = ""
+    message_for_day = ""
     for index, row in enumerate(query):
-        event_str = f"С {row.timestart} до {row.timeend}\n" \
-                    f"{row.event}\n\n"
-        table_str += event_str
-    if table_str:
-        message_for_day += table_str
+        events_str += f"С {row.timestart} до {row.timeend}\n" \
+                      f"{row.event}\n\n"
+    print()
+    print()
+    print(events_str, 12312312312312312231232123123)
+    print()
+    print()
+    if events_str:
+        message_for_day += message_head + events_str
     else:
-        message_for_day += "На сегодня никаких планов"
+        message_for_day += f"На {message_head} ничего не " \
+                           f"запланировано"
     return message_for_day
