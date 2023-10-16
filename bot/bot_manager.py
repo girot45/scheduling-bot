@@ -1,12 +1,8 @@
-import os
-
 from aiogram import Dispatcher, Bot
 from aiogram.fsm.storage.memory import MemoryStorage
-from dotenv import load_dotenv
 
-load_dotenv()
+from bot.config import TELEGRAM_TOKEN
 
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 
 storage = MemoryStorage()
 bot = Bot(token=TELEGRAM_TOKEN, parse_mode='HTML')

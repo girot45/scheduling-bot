@@ -9,5 +9,3 @@ class UserData(StatesGroup):
     IsRepeat = State()
     Approve = State()
 
-class GetTableByDate(StatesGroup):
-    Date = State()
