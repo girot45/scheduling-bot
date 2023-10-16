@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, String, Integer, ForeignKey, Date
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -24,7 +24,7 @@ class Table(Base):
         )
     )
     day_of_week = Column(String(length=15))
-    date = Column(String(length=10))
+    date = Column(Date())
     timestart = Column(String(length=5))
     timeend = Column(String(length=5))
     event = Column(String)
