@@ -8,15 +8,15 @@ from aiogram.fsm.context import FSMContext
 from bot.States import UserData
 from bot.database.db_manager import db_connect
 from bot.handlers.buttons_manager import yes_or_no_buttons, \
-    approve_buttons, main_menu_buttons
+    approve_buttons, main_menu_buttons, dont_need_button
 from bot.queries.insert_event import insert_event
+
 
 add_event_router = Router()
 
 
 @add_event_router.message(Command("add_event"))
 async def add_event(message: types.Message, state: FSMContext):
-    # Set the state to Date
     await message.answer(
         "Давайте добавим новое событие. Введите дату в формате "
         "ГГГГ-ММ-ДД")
@@ -48,7 +48,10 @@ async def date_incorrectly(message: types.Message):
 async def timestart(message: types.Message, state: FSMContext):
     await state.update_data(TimeStart=message.text)
 
-    await message.answer("Введите время окончания (например, 15:00)")
+    await message.answer(
+        "Введите время окончания в формате HH:MM",
+        reply_markup=dont_need_button()
+    )
     await state.set_state(UserData.TimeEnd)
 
 
@@ -71,16 +74,22 @@ async def timeend(message: types.Message, state: FSMContext):
 
 
 @add_event_router.message(
-    UserData.TimeStart or UserData.TimeEnd
+    UserData.TimeEnd,
+    F.text.in_({"Не нужно"})
 )
+async def timeend_dont_need(message: types.Message, state: FSMContext):
+    await state.update_data(TimeEnd=None)
+
+    await message.reply("Теперь введите событие")
+    await state.set_state(UserData.Event)
+
+
+@add_event_router.message(UserData.TimeStart or UserData.TimeEnd)
 async def time_incorrect(message: types.Message):
     await message.answer("Время введено некорректно")
 
 
-@add_event_router.message(
-    UserData.Event,
-    F.text
-)
+@add_event_router.message(UserData.Event,F.text)
 async def event(message: types.Message, state: FSMContext):
     await state.update_data(Event=message.text)
     await message.reply(
@@ -101,28 +110,28 @@ async def isrepeat(message: types.Message, state: FSMContext):
         isRepeat = 0
     await state.update_data(IsRepeat=isRepeat)
     user_data = await state.get_data()
+    if not user_data['TimeEnd']:
+        timeend_ = "Не нужно"
+    else:
+        timeend_ = user_data['TimeEnd']
     await message.answer(
         "Проверьте введенные вами данные\n\n"
         f"Дата: {user_data['Date']}\n"
         f"Время начала: {user_data['TimeStart']}\n"
-        f"Время окончания: {user_data['TimeEnd']}\n\n"
+        f"Время окончания: {timeend_}\n\n"
         f"Описание события:\n{user_data['Event']}\n\n"
         f"Повторятся: {message.text.lower()}\n",
         reply_markup=approve_buttons()
     )
-    # for case in user_data.items():
-    #     await message.answer(f"{user_data[case]}")
     await state.set_state(UserData.Approve)
 
 
-@add_event_router.message(
-    UserData.IsRepeat)
+@add_event_router.message(UserData.IsRepeat)
 async def isrepeat(message: types.Message):
     await message.answer(
         'Введите <b>Да</b> или <b>Нет</b>, или воспользуйтесь клавиатурой',
         reply_markup=yes_or_no_buttons(),
     )
-
 
 
 @add_event_router.message(
@@ -157,7 +166,11 @@ async def approve(
         }
         session = await db_connect.get_session()
         res = await insert_event(data_to_db, session)
-        await message.answer("Вы успешно добавили событие")
+        if res:
+            answer_str = "Вы успешно добавили событие"
+        else:
+            answer_str = "Не удалось добавить событие. Проблема уже решается"
+        await message.answer(answer_str)
         await message.answer("Меню", reply_markup=main_menu_buttons())
 
 

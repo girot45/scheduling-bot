@@ -1,5 +1,6 @@
 from datetime import date
 
+
 day_of_week_by_index = {
     0: "Понедельник",
     1: "Вторник",
@@ -25,6 +26,7 @@ month_by_index = {
     11: 'Декабря',
 }
 
+
 def formatting_a_day_schedule_for_sending_a_message(
         query,
         date_: date,
@@ -32,8 +34,8 @@ def formatting_a_day_schedule_for_sending_a_message(
     day_of_week = date_.weekday()
     day = date_.day
     month = date_.month
-    message_head = f"{day_of_week_by_index[day_of_week]} {day} " \
-                     f"{month_by_index[month - 1]}\n\n"
+    message_head = f"{day} {month_by_index[month - 1]} " \
+                   f"({day_of_week_by_index[day_of_week]})\n\n"
     events_str = ""
     message_for_day = ""
     for index, row in enumerate(query):
@@ -42,6 +44,6 @@ def formatting_a_day_schedule_for_sending_a_message(
     if events_str:
         message_for_day += message_head + events_str
     else:
-        message_for_day += f"На {message_head} ничего не " \
+        message_for_day += f"На {message_head}ничего не " \
                            f"запланировано"
     return message_for_day

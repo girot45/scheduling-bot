@@ -6,9 +6,11 @@ def main_menu_buttons():
     tomorrow_btn = KeyboardButton(text="Завтра")
     this_week_btn = KeyboardButton(text="Эта неделя")
     next_week_btn = KeyboardButton(text="Следующая неделя")
+    choose_date_btn = KeyboardButton(text="Выбрать дату")
     buttons = [
         [today_btn, tomorrow_btn],
         #[this_week_btn, next_week_btn]
+        [choose_date_btn]
     ]
 
     keyboard = ReplyKeyboardMarkup(keyboard=buttons,
@@ -39,6 +41,16 @@ def approve_buttons():
     ]
     keyboard = ReplyKeyboardMarkup(
         keyboard=buttons,
+        resize_keyboard=True,
+        one_time_keyboard=True
+    )
+    return keyboard
+
+
+def dont_need_button():
+    dont_need_btn = KeyboardButton(text="Не нужно")
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[[dont_need_btn]],
         resize_keyboard=True,
         one_time_keyboard=True
     )

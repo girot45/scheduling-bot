@@ -1,6 +1,6 @@
 from datetime import  date
 
-from sqlalchemy import select
+from sqlalchemy import select, cast, Date
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import or_
 
@@ -21,12 +21,13 @@ async def query_events_by_tg_id(
             .filter(
                 Table.tgid == tg_id,
                 or_(
-                    Table.date == date_str,
-                    ((Table.date <= date_str) &
-                     (Table.day_of_week == day_of_week) &
+                    Table.date == cast(date_, Date),
+                    ((Table.date <= cast(date_, Date)) &
+                     (Table.day_of_week == str(day_of_week)) &
                      (Table.isrepeat == 1))
                 )
-            ).order_by(Table.timestart.asc(), Table.timeend.asc())
+            )
+            .order_by(Table.timestart.asc(), Table.timeend.asc())
         )
 
         res = await session.execute(stmt)
