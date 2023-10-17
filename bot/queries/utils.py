@@ -39,8 +39,12 @@ def formatting_a_day_schedule_for_sending_a_message(
     events_str = ""
     message_for_day = ""
     for index, row in enumerate(query):
-        events_str += f"С {row.timestart} до {row.timeend}\n" \
-                      f"{row.event}\n\n"
+        if row.timeend:
+            events_str += f"С {row.timestart} до {row.timeend}\n" \
+                        f"{row.event}\n\n"
+        else:
+            events_str += f"В {row.timestart}\n" \
+                          f"{row.event}\n\n"
     if events_str:
         message_for_day += message_head + events_str
     else:
