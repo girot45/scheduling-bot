@@ -1,6 +1,6 @@
 from datetime import  date
 
-from sqlalchemy import select, cast, Date
+from sqlalchemy import select, cast, Date, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import or_
 
@@ -27,7 +27,10 @@ async def query_events_by_tg_id(
                      (Table.isrepeat == 1))
                 )
             )
-            .order_by(Table.timestart.asc(), Table.timeend.asc())
+            .order_by(func.to_timestamp(Table.timestart,
+                                        'HH24:MI').asc(),
+                      func.to_timestamp(Table.timeend,
+                                        'HH24:MI').asc(),)
         )
 
         res = await session.execute(stmt)
