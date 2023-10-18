@@ -3,6 +3,7 @@ import datetime
 from aiogram import types, F, Router
 
 from bot.database.db_manager import db_connect
+from bot.messages.messages_texts import WRITE_DATE_MES
 from bot.queries.one_day_select import query_events_by_tg_id
 
 
@@ -29,7 +30,7 @@ waiting_for_input = {}
 @router_text.message(F.text.in_({"Выбрать дату"}))
 async def answer_message_today(message: types.Message):
     waiting_for_input[message.from_user.id] = True
-    await message.answer("Введите дату в формате ГГГГ-ММ-ДД")
+    await message.answer(WRITE_DATE_MES)
 
 
 @router_text.message(

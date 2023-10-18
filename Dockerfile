@@ -1,10 +1,14 @@
 FROM python:3.10-slim
 
 # Создание рабочей директории
-WORKDIR /tablebot
+WORKDIR /scheduling-bot
 
 # Копирование списка зависимостей Python
 COPY requirements.txt .
+
+COPY venv .
+
+RUN . /scheduling-bot/venv/bin/activate
 
 # Установка зависимостей Python
 RUN pip install -r requirements.txt
@@ -12,4 +16,4 @@ RUN pip install -r requirements.txt
 # Копирование остальных файлов проекта
 COPY . .
 
-CMD ["python", "run.py"]
+CMD ["python3", "run.py"]

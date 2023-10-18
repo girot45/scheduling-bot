@@ -1,4 +1,3 @@
-
 from aiogram import types, Router
 from aiogram.filters import Command
 from bot.handlers.buttons_manager import main_menu_buttons

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import or_
 
 from bot.database.database import Table
-from bot.queries.utils import \
+from bot.messages.formating_messages import \
     formatting_a_day_schedule_for_sending_a_message
 
 
@@ -14,7 +14,6 @@ async def query_events_by_tg_id(
         tg_id: int,
         date_: date
 ):
-        date_str = date_.strftime("%Y-%m-%d")
         day_of_week = date_.weekday()
         stmt = (
             select(Table)

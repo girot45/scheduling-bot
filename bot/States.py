@@ -8,4 +8,3 @@ class UserData(StatesGroup):
     Event = State()
     IsRepeat = State()
     Approve = State()
-

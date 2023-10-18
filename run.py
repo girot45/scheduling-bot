@@ -3,7 +3,7 @@ import asyncio
 from bot.bot_manager import dp, bot
 from bot.handlers.commands import router_commands
 from bot.handlers.text_answers import router_text
-from bot.handlers.scripts.add_event import add_event_router
+from bot.scripts.add_event import add_event_router
 
 from log_manager import logger
 

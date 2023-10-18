@@ -7,8 +7,13 @@ from aiogram.fsm.context import FSMContext
 
 from bot.States import UserData
 from bot.database.db_manager import db_connect
-from bot.handlers.buttons_manager import yes_or_no_buttons, \
-    approve_buttons, main_menu_buttons, dont_need_button
+from bot.handlers.buttons_manager import (
+    yes_or_no_buttons,
+    approve_buttons,
+    main_menu_buttons,
+    dont_need_button
+)
+from bot.messages.messages_texts import *
 from bot.queries.insert_event import insert_event
 
 
@@ -17,10 +22,13 @@ add_event_router = Router()
 
 @add_event_router.message(Command("add_event"))
 async def add_event(message: types.Message, state: FSMContext):
-    await message.answer(
-        "Давайте добавим новое событие. Введите дату в формате "
-        "ГГГГ-ММ-ДД")
+    await message.answer(f"{ADD_NEW_EVENT} {WRITE_DATE_MES}")
     await state.set_state(UserData.Date)
+
+
+@add_event_router.message(UserData.Date)
+async def date_incorrectly(message: types.Message):
+    await message.answer(ADD_DATE_ERROR_FORMAT_MES)
 
 
 @add_event_router.message(
@@ -31,14 +39,8 @@ async def add_event(message: types.Message, state: FSMContext):
 async def date(message: types.Message, state: FSMContext):
     await state.update_data(Date=message.text.lower())
 
-    await message.reply(f"Вы ввели дату: {message.text}\n"
-                        f"Теперь введите время начала (например, 12:00)")
+    await message.answer(WRITE_TIMESTART_MES)
     await state.set_state(UserData.TimeStart)
-
-
-@add_event_router.message(UserData.Date)
-async def date_incorrectly(message: types.Message):
-    await message.answer("Дата введена некорректно")
 
 
 @add_event_router.message(
@@ -48,10 +50,8 @@ async def date_incorrectly(message: types.Message):
 async def timestart(message: types.Message, state: FSMContext):
     await state.update_data(TimeStart=message.text)
 
-    await message.answer(
-        "Введите время окончания в формате HH:MM",
-        reply_markup=dont_need_button()
-    )
+    await message.answer(WRITE_TIMEEND_MES,
+                         reply_markup=dont_need_button())
     await state.set_state(UserData.TimeEnd)
 
 
@@ -63,13 +63,11 @@ async def timeend(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
     if datetime.strptime(message.text, "%H:%M") <= \
             datetime.strptime(user_data["TimeStart"], "%H:%M"):
-        await message.answer("Время окончания не может быть меньше "
-                             "времени начала")
+        await message.answer(ADD_TIME_VALUE_ERROR)
         return
     await state.update_data(TimeEnd=message.text)
 
-    await message.reply(f"Вы ввели время окончания:"
-                        f" {message.text}\nТеперь введите событие")
+    await message.reply(WRITE_EVENT_MES)
     await state.set_state(UserData.Event)
 
 
@@ -77,23 +75,25 @@ async def timeend(message: types.Message, state: FSMContext):
     UserData.TimeEnd,
     F.text.in_({"Не нужно"})
 )
-async def timeend_dont_need(message: types.Message, state: FSMContext):
+async def timeend_dont_need(
+        message: types.Message, state: FSMContext
+):
     await state.update_data(TimeEnd=None)
 
-    await message.reply("Теперь введите событие")
+    await message.reply(WRITE_EVENT_MES)
     await state.set_state(UserData.Event)
 
 
 @add_event_router.message(UserData.TimeStart or UserData.TimeEnd)
 async def time_incorrect(message: types.Message):
-    await message.answer("Время введено некорректно")
+    await message.answer(ADD_TIME_FORMAT_ERROR_MES)
 
 
-@add_event_router.message(UserData.Event,F.text)
+@add_event_router.message(UserData.Event, F.text)
 async def event(message: types.Message, state: FSMContext):
     await state.update_data(Event=message.text)
     await message.reply(
-        "Вы ввели событие. Оно будет повторяться каждую неделю?",
+        WRITE_ISREPEAT_MES,
         reply_markup=yes_or_no_buttons()
     )
     await state.set_state(UserData.IsRepeat)
@@ -114,6 +114,7 @@ async def isrepeat(message: types.Message, state: FSMContext):
         timeend_ = "Не нужно"
     else:
         timeend_ = user_data['TimeEnd']
+    await message.answer(EVENTED_CREATED_MES)
     await message.answer(
         "Проверьте введенные вами данные\n\n"
         f"Дата: {user_data['Date']}\n"
@@ -129,14 +130,15 @@ async def isrepeat(message: types.Message, state: FSMContext):
 @add_event_router.message(UserData.IsRepeat)
 async def isrepeat(message: types.Message):
     await message.answer(
-        'Введите <b>Да</b> или <b>Нет</b>, или воспользуйтесь клавиатурой',
+        ADD_ISREPEAT_ERROR_MES,
         reply_markup=yes_or_no_buttons(),
     )
 
 
 @add_event_router.message(
     UserData.Approve,
-    F.text.in_({"Все верно", "Отменить добавление", "Настроить заново"})
+    F.text.in_(
+        {"Все верно", "Отменить добавление", "Настроить заново"})
 )
 async def approve(
         message: types.Message,
@@ -147,13 +149,12 @@ async def approve(
     await state.clear()
 
     if message.text == "Отменить добавление":
-        await message.answer("Добавление события отменено")
+        await message.answer(CANCEL_CREATION_OF_EVENT)
         time.sleep(0.5)
         await message.answer("Меню", reply_markup=main_menu_buttons())
     elif message.text == "Настроить заново":
         await message.answer(
-            "Давайте попробуем еще раз. Введите дату в формате "
-            "ГГГГ-ММ-ДД")
+            F"{ADD_EVENT_AGAIN_MES} {WRITE_DATE_MES}")
         await state.set_state(UserData.Date)
     else:
         data_to_db = {
@@ -164,17 +165,20 @@ async def approve(
             "Event": user_data['Event'],
             "IsRepeat": user_data['IsRepeat'],
         }
+        await message.answer(WRITE_EVENT_TO_DB_MES)
         session = await db_connect.get_session()
         res = await insert_event(data_to_db, session)
         if res:
-            answer_str = "Вы успешно добавили событие"
+            answer_str = WRITE_EVENT_TO_DB_SUCCESS_MES
         else:
-            answer_str = "Не удалось добавить событие. Проблема уже решается"
+            answer_str = WRITE_EVENT_TO_DB_ERROR_MES
         await message.answer(answer_str)
         await message.answer("Меню", reply_markup=main_menu_buttons())
 
 
 @add_event_router.message(UserData.Approve)
 async def approve_incorrect(message: types.Message):
-    await message.answer("Для подтверждения воспользуйтесь "
-                         "клавиатурой")
+    await message.answer(
+        APPROVE_EVENT_FORMAT_ERROR,
+        reply_markup=approve_buttons()
+    )
