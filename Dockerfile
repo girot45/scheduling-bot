@@ -8,7 +8,7 @@ COPY requirements.txt .
 
 COPY venv .
 
-RUN . /scheduling-bot/venv/bin/activate
+RUN . /home/scheduling-bot/venv/bin/activate
 
 # Установка зависимостей Python
 RUN pip install -r requirements.txt
