@@ -6,10 +6,10 @@ WORKDIR /scheduling-bot
 # Копирование списка зависимостей Python
 COPY requirements.txt .
 
-COPY venv .
+# COPY venv .
 
 # RUN source /home/scheduling-bot/venv/bin/activate
-CMD ["source", "/home/scheduling-bot/venv/bin/activate"]
+# CMD ["source", "/home/scheduling-bot/venv/bin/activate"]
 
 # Установка зависимостей Python
 RUN pip install -r requirements.txt
