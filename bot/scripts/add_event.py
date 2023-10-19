@@ -26,11 +26,6 @@ async def add_event(message: types.Message, state: FSMContext):
     await state.set_state(UserData.Date)
 
 
-@add_event_router.message(UserData.Date)
-async def date_incorrectly(message: types.Message):
-    await message.answer(ADD_DATE_ERROR_FORMAT_MES)
-
-
 @add_event_router.message(
     UserData.Date,
     F.text.regexp(
@@ -41,6 +36,11 @@ async def date(message: types.Message, state: FSMContext):
 
     await message.answer(WRITE_TIMESTART_MES)
     await state.set_state(UserData.TimeStart)
+
+
+@add_event_router.message(UserData.Date)
+async def date_incorrectly(message: types.Message):
+    await message.answer(ADD_DATE_ERROR_FORMAT_MES)
 
 
 @add_event_router.message(
