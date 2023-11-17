@@ -1,4 +1,5 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, \
+    InlineKeyboardMarkup, InlineKeyboardButton
 
 
 def main_menu_buttons() -> ReplyKeyboardMarkup:
@@ -59,3 +60,8 @@ def dont_need_button() -> ReplyKeyboardMarkup:
         one_time_keyboard=True
     )
     return keyboard
+
+
+def date_or_weekday_buttons() -> ReplyKeyboardMarkup:
+    date_btn = KeyboardButton(text="По дате")
+    weekday_btn = KeyboardButton(text="По дню недели")

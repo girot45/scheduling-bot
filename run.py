@@ -10,9 +10,10 @@ from log_manager import logger
 
 dp.include_routers(router_commands, add_event_router, router_text)
 
-
 async def main():
     await dp.start_polling(bot)
+
+
 try:
     asyncio.run(main())
 except Exception:
