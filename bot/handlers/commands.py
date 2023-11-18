@@ -12,3 +12,7 @@ async def start(message: types.Message):
         "Меню",
         reply_markup=main_menu_buttons()
     )
+
+@router_commands.message(Command("notif"))
+async def switch_notif(message: types.Message):
+    await message.answer("123")

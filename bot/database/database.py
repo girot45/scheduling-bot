@@ -6,11 +6,11 @@ Base = declarative_base()
 
 
 class User(Base):
-    id = Column(Integer, primary_key=True, index=True,
-                autoincrement=True),
+    __tablename__ = "User"
     tgid = Column(Integer, primary_key=True, index=True)
     username = Column(String(length=255))
     need_notif = Column(Integer, default=1)
+
 
 class Table(Base):
     __tablename__ = "Table"
