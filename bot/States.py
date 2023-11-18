@@ -8,3 +8,7 @@ class UserData(StatesGroup):
     Event = State()
     IsRepeat = State()
     Approve = State()
+
+
+class TableDate(StatesGroup):
+    Date = State()

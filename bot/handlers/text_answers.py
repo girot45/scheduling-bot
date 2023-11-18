@@ -2,7 +2,9 @@ import datetime
 from typing import Optional
 
 from aiogram import types, F, Router, Bot
+from aiogram.fsm.context import FSMContext
 
+from bot.States import TableDate
 from bot.database.db_manager import db_connect
 from bot.messages.formating_messages import \
     formatting_a_day_schedule_for_sending_a_message
@@ -26,7 +28,7 @@ async def send_table_today_or_tomorrow(
     else:
         send_id = chat_id
     if (message_type == types.Message
-         and message.text.lower() == "завтра") or istomorrow:
+        and message.text.lower() == "завтра") or istomorrow:
         date_ += datetime.timedelta(days=1)
 
     res = await query_events_by_tg_id(
@@ -47,41 +49,49 @@ async def send_table_today_or_tomorrow(
         await message.answer(message_to_user)
 
 
-waiting_for_input = {}
-
 
 @router_text.message(F.text.in_({"Выбрать дату"}))
-async def send_message_on_date(message: types.Message):
-    waiting_for_input[message.from_user.id] = True
+async def send_message_on_date(
+        message: types.Message,
+        state: FSMContext
+        ):
     await message.answer(WRITE_DATE_MES)
+    await state.set_state(TableDate.Date)
 
 
 @router_text.message(
-    lambda message: waiting_for_input.get(message.from_user.id),
+    TableDate.Date,
     F.text.regexp(
-        "[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])"))
-async def input_received(message: types.Message):
+        "[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])")
+)
+async def input_received(
+        message: types.Message,
+        state: FSMContext
+        ):
     user_input = message.text
     try:
+
         if datetime.date.fromisoformat(user_input):
             pass
         await message.answer(f"Вы ввели: {user_input}")
-        waiting_for_input[message.from_user.id] = False
         session = await db_connect.get_session()
-        date_ = datetime.datetime.strptime(user_input, "%Y-%m-%d")
+
+        date_ = datetime.datetime.fromisoformat(user_input)
         res = await query_events_by_tg_id(
             session,
             message.from_user.id,
             date_
         )
-        await message.answer(res)
+        mes_to_user = \
+            formatting_a_day_schedule_for_sending_a_message(
+                res,
+                date_
+            )
+        await message.answer(mes_to_user)
+        await state.clear()
     except ValueError:
-        await message.answer("Такой даты несуществует. Введите дату корректно")
+        await message.answer(
+            "Такой даты несуществует. Введите дату корректно")
         return
 
-@router_text.message(
-    lambda message: waiting_for_input.get(message.from_user.id),
-    F.text.regexp(
-        "[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])"))
-async def table_by_date_incorrect(message: types.Message):
-    await message.answer("Ведите дату корректно")
+
