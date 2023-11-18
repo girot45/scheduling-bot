@@ -1,8 +1,11 @@
 import asyncio
 
 from bot.bot_manager import dp, bot
+from bot.database.db_manager import db_connect
 from bot.handlers.commands import router_commands
 from bot.handlers.text_answers import router_text
+from bot.queries.system_select import list_of_users_for_notif_on_start
+from bot.scheduler_manager import init_shedule_on_start, scheduler
 from bot.scripts.add_event import add_event_router
 
 from log_manager import logger
@@ -12,7 +15,13 @@ dp.include_routers(router_commands, add_event_router, router_text)
 
 
 async def main():
+    scheduler.start()
+    await init_shedule_on_start()
     await dp.start_polling(bot)
+
+
+
+
 try:
     asyncio.run(main())
 except Exception:
