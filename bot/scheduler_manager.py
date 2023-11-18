@@ -27,7 +27,7 @@ def turn_on_schedule_for_user(
         id=f"{tgid}mo",
         day_of_week='mon-sun',
         hour=8,
-        minute=36,
+        minute=00,
         kwargs={'message': bot, 'chat_id': tgid, 'istomorrow': False},
         max_instances=5)
 
