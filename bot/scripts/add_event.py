@@ -1,5 +1,5 @@
 import time
-from datetime import datetime
+from datetime import datetime, date
 
 from aiogram import types, F, Router
 from aiogram.filters import Command
@@ -32,10 +32,16 @@ async def add_event(message: types.Message, state: FSMContext):
         "[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])")
 )
 async def date(message: types.Message, state: FSMContext):
-    await state.update_data(Date=message.text.lower())
+    try:
+        if date.fromisoformat(message.text.lower()):
+            pass
+        await state.update_data(Date=message.text.lower())
 
-    await message.answer(WRITE_TIMESTART_MES)
-    await state.set_state(UserData.TimeStart)
+        await message.answer(WRITE_TIMESTART_MES)
+        await state.set_state(UserData.TimeStart)
+    except ValueError:
+        await message.answer("Такой даты несуществует. Введите дату корректно")
+        return
 
 
 @add_event_router.message(UserData.Date)

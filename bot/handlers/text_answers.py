@@ -62,13 +62,19 @@ async def send_message_on_date(message: types.Message):
         "[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])"))
 async def input_received(message: types.Message):
     user_input = message.text
-    await message.answer(f"Вы ввели: {user_input}")
-    waiting_for_input[message.from_user.id] = False
-    session = await db_connect.get_session()
-    date_ = datetime.datetime.strptime(user_input, "%Y-%m-%d")
-    res = await query_events_by_tg_id(
-        session,
-        message.from_user.id,
-        date_
-    )
-    await message.answer(res)
+    try:
+        if datetime.date.fromisoformat(user_input):
+            pass
+        await message.answer(f"Вы ввели: {user_input}")
+        waiting_for_input[message.from_user.id] = False
+        session = await db_connect.get_session()
+        date_ = datetime.datetime.strptime(user_input, "%Y-%m-%d")
+        res = await query_events_by_tg_id(
+            session,
+            message.from_user.id,
+            date_
+        )
+        await message.answer(res)
+    except ValueError:
+        await message.answer("Такой даты несуществует. Введите дату корректно")
+        return
