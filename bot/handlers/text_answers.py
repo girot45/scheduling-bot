@@ -1,34 +1,57 @@
 import datetime
+from typing import Optional
 
-from aiogram import types, F, Router
+from aiogram import types, F, Router, Bot
 
 from bot.database.db_manager import db_connect
+from bot.messages.formating_messages import \
+    formatting_a_day_schedule_for_sending_a_message
 from bot.messages.messages_texts import WRITE_DATE_MES
 from bot.queries.one_day_select import query_events_by_tg_id
-
 
 router_text = Router()
 
 
 @router_text.message(F.text.lower().in_({"сегодня", "завтра"}))
-async def answer_message_today(message: types.Message):
+async def send_table_today_or_tomorrow(
+        message: Optional[Bot | types.Message],
+        chat_id: Optional[int] = None,
+        istomorrow: Optional[bool] = None,
+):
     session = await db_connect.get_session()
     date_ = datetime.date.today()
-    if message.text.lower() == "завтра":
+    message_type = type(message)
+    if message_type == types.Message:
+        send_id = message.from_user.id
+    else:
+        send_id = chat_id
+    if (message_type == types.Message
+         and message.text.lower() == "завтра") or istomorrow:
         date_ += datetime.timedelta(days=1)
+
     res = await query_events_by_tg_id(
         session,
-        message.from_user.id,
+        send_id,
         date_
     )
-    await message.answer(res)
+    message_to_user = formatting_a_day_schedule_for_sending_a_message(
+        res,
+        date_
+    )
+    if message_type == Bot:
+        await message.send_message(
+            chat_id=send_id,
+            text=message_to_user
+        )
+    elif message_type == types.Message:
+        await message.answer(message_to_user)
 
 
 waiting_for_input = {}
 
 
 @router_text.message(F.text.in_({"Выбрать дату"}))
-async def answer_message_today(message: types.Message):
+async def send_message_on_date(message: types.Message):
     waiting_for_input[message.from_user.id] = True
     await message.answer(WRITE_DATE_MES)
 
