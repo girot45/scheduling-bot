@@ -78,3 +78,10 @@ async def input_received(message: types.Message):
     except ValueError:
         await message.answer("Такой даты несуществует. Введите дату корректно")
         return
+
+@router_text.message(
+    lambda message: waiting_for_input.get(message.from_user.id),
+    F.text.regexp(
+        "[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])"))
+def table_by_date_incorrect(message: types.Message):
+    await message.answer("Ведите дату корректно")
