@@ -16,7 +16,6 @@ from bot.messages.messages_texts import WRITE_DATE_MES, \
 from bot.queries.insert_event import insert_note
 from bot.queries.one_day_select import query_events_by_tg_id
 
-
 router_text = Router()
 
 
@@ -34,7 +33,7 @@ async def send_table_today_or_tomorrow(
     else:
         send_id = chat_id
     if (message_type == types.Message and
-         message.text.lower() == "завтра") or istomorrow:
+        message.text.lower() == "завтра") or istomorrow:
         date_ += timedelta(days=1)
 
     res = await query_events_by_tg_id(
@@ -111,7 +110,11 @@ async def fast_add_note(message: types.Message, ):
                 date_of_note
         ):
             await message.answer(
-                "Вы можете сделать быстрое добавление "
+                "Вы можете сделать быстрое добавление события если "
+                "введете сообщение \nДАТА\nВРЕМЯ НАЧАЛА\n СОБЫТИЕ. \n"
+                "Пример сообщения\n\n "
+                "2024-01-01 "
+                "00:00(это необязательно) Новый год"
             )
             return
 
@@ -133,7 +136,7 @@ async def fast_add_note(message: types.Message, ):
             "Timestart": timestart,
             "Event": text_of_note,
         }
-        print()
+
         await message.answer(WRITE_EVENT_TO_DB_MES)
         session = await db_connect.get_session()
         res = await insert_note(data_to_db, session)
@@ -144,5 +147,15 @@ async def fast_add_note(message: types.Message, ):
         await message.answer(answer_str)
         await message.answer("Меню",
                              reply_markup=main_menu_buttons())
+    except ValueError:
+        await message.answer(
+            "Дата введена некорректно"
+        )
     except:
-        await message.answer("Вы можете сделать быстрое добавление ")
+        await message.answer(
+            "Вы можете сделать быстрое добавление события если "
+            "введете сообщение \nДАТА\nВРЕМЯ НАЧАЛА ("
+            "необязательно)\n СОБЫТИЕ. \n"
+            "Пример сообщения\n\n "
+            "2024-01-01 00:00(это необязательно) Новый год"
+        )
