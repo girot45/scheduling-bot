@@ -1,16 +1,20 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, \
+    WebAppInfo
 
 
 def main_menu_buttons() -> ReplyKeyboardMarkup:
     today_btn = KeyboardButton(text="Сегодня")
     tomorrow_btn = KeyboardButton(text="Завтра")
+    kb = KeyboardButton(text="Перейти",
+                        web_app=WebAppInfo(url="https://calendar.yandex.ru/event?moreParams=1"))
     # this_week_btn = KeyboardButton(text="Эта неделя")
     # next_week_btn = KeyboardButton(text="Следующая неделя")
     choose_date_btn = KeyboardButton(text="Выбрать дату")
     buttons = [
         [today_btn, tomorrow_btn],
         # [this_week_btn, next_week_btn]
-        [choose_date_btn]
+        [choose_date_btn],
+        [kb]
     ]
 
     keyboard = ReplyKeyboardMarkup(

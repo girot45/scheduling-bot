@@ -15,12 +15,19 @@ def formatting_a_day_schedule_for_sending_a_message(
                    f"({day_of_week_by_index[day_of_week]})\n\n"
     events_str = ""
     message_for_day = ""
+    during_the_day = ""
     for index, row in enumerate(query):
-        if row.timeend:
-            events_str += f"С {row.timestart} до {row.timeend}\n"
+        if not row.timestart:
+            during_the_day += f"{row.event.strip()}\n"
         else:
-            events_str += f"В {row.timestart}\n"
-        events_str += f"{row.event}\n\n"
+            if row.timeend:
+                events_str += f"С {row.timestart} до {row.timeend}\n"
+            else:
+                events_str += f"В {row.timestart}\n"
+            events_str += f"{row.event.strip()}\n\n"
+
+    if during_the_day:
+        events_str += f"В течение дня\n{during_the_day}"
     if events_str:
         message_for_day += message_head + events_str
     else:

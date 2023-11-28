@@ -19,7 +19,7 @@ class Table(Base):
     tgid = Column(Integer)
     day_of_week = Column(String(length=15))
     date = Column(Date)
-    timestart = Column(String(length=5))
+    timestart = Column(String(length=5), nullable=True)
     timeend = Column(String(length=5), nullable=True)
     event = Column(String)
     isrepeat = Column(Integer, default=0)

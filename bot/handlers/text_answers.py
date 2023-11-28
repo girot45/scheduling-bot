@@ -1,4 +1,5 @@
-import datetime
+from datetime import date, timedelta, datetime
+import re
 from typing import Optional
 
 from aiogram import types, F, Router, Bot
@@ -6,10 +7,15 @@ from aiogram.fsm.context import FSMContext
 
 from bot.States import TableDate
 from bot.database.db_manager import db_connect
+from bot.handlers.buttons_manager import main_menu_buttons
 from bot.messages.formating_messages import \
     formatting_a_day_schedule_for_sending_a_message
-from bot.messages.messages_texts import WRITE_DATE_MES
+from bot.messages.messages_texts import WRITE_DATE_MES, \
+    WRITE_EVENT_TO_DB_MES, WRITE_EVENT_TO_DB_SUCCESS_MES, \
+    WRITE_EVENT_TO_DB_ERROR_MES
+from bot.queries.insert_event import insert_note
 from bot.queries.one_day_select import query_events_by_tg_id
+
 
 router_text = Router()
 
@@ -21,15 +27,15 @@ async def send_table_today_or_tomorrow(
         istomorrow: Optional[bool] = None,
 ):
     session = await db_connect.get_session()
-    date_ = datetime.date.today()
+    date_ = date.today()
     message_type = type(message)
     if message_type == types.Message:
         send_id = message.from_user.id
     else:
         send_id = chat_id
-    if (message_type == types.Message
-        and message.text.lower() == "завтра") or istomorrow:
-        date_ += datetime.timedelta(days=1)
+    if (message_type == types.Message and
+         message.text.lower() == "завтра") or istomorrow:
+        date_ += timedelta(days=1)
 
     res = await query_events_by_tg_id(
         session,
@@ -49,12 +55,11 @@ async def send_table_today_or_tomorrow(
         await message.answer(message_to_user)
 
 
-
 @router_text.message(F.text.in_({"Выбрать дату"}))
 async def send_message_on_date(
         message: types.Message,
         state: FSMContext
-        ):
+):
     await message.answer(WRITE_DATE_MES)
     await state.set_state(TableDate.Date)
 
@@ -67,16 +72,16 @@ async def send_message_on_date(
 async def input_received(
         message: types.Message,
         state: FSMContext
-        ):
+):
     user_input = message.text
     try:
 
-        if datetime.date.fromisoformat(user_input):
+        if date.fromisoformat(user_input):
             pass
         await message.answer(f"Вы ввели: {user_input}")
         session = await db_connect.get_session()
 
-        date_ = datetime.datetime.fromisoformat(user_input)
+        date_ = datetime.fromisoformat(user_input)
         res = await query_events_by_tg_id(
             session,
             message.from_user.id,
@@ -95,3 +100,49 @@ async def input_received(
         return
 
 
+@router_text.message(F.text)
+async def fast_add_note(message: types.Message, ):
+    try:
+        message_text_source = message.text.split(" ")
+        date_of_note = message_text_source[0]
+
+        if not re.match(
+                r"[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])",
+                date_of_note
+        ):
+            await message.answer(
+                "Вы можете сделать быстрое добавление "
+            )
+            return
+
+        if re.match(
+                r"^([01]?[0-9]|2[0-3]):[0-5][0-9]$",
+                message_text_source[1]
+        ):
+            timestart = message_text_source[1]
+            text_of_note = ' '.join(message_text_source[2::])
+        else:
+            timestart = ""
+            text_of_note = ' '.join(message_text_source[1::])
+
+        if date.fromisoformat(date_of_note):
+            pass
+        data_to_db = {
+            "tg_id": message.from_user.id,
+            "Date": date_of_note,
+            "Timestart": timestart,
+            "Event": text_of_note,
+        }
+        print()
+        await message.answer(WRITE_EVENT_TO_DB_MES)
+        session = await db_connect.get_session()
+        res = await insert_note(data_to_db, session)
+        if res:
+            answer_str = WRITE_EVENT_TO_DB_SUCCESS_MES
+        else:
+            answer_str = WRITE_EVENT_TO_DB_ERROR_MES
+        await message.answer(answer_str)
+        await message.answer("Меню",
+                             reply_markup=main_menu_buttons())
+    except:
+        await message.answer("Вы можете сделать быстрое добавление ")
