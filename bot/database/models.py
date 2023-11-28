@@ -1,13 +1,12 @@
 from sqlalchemy import MetaData, Table, Date, Column, Integer, \
-    String, ForeignKey
-
+    String, ForeignKey, BigInteger, BIGINT
 
 metadata = MetaData()
 
 user = Table(
     "User",
     metadata,
-    Column("tgid", Integer, primary_key=True),
+    Column("tgid", BIGINT, primary_key=True),
     Column("username", String(length=255)),
     Column("need_notif", Integer, server_default="1"),
 )
@@ -18,7 +17,7 @@ table = Table(
 
     Column("id", Integer, primary_key=True, index=True,
            autoincrement=True),
-    Column("tgid", Integer, ForeignKey(user.c.tgid,
+    Column("tgid", BIGINT, ForeignKey(user.c.tgid,
                                        onupdate="cascade",
                                        ondelete="cascade")),
     Column("day_of_week", String(length=15)),

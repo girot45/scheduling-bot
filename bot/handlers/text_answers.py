@@ -103,6 +103,14 @@ async def input_received(
 async def fast_add_note(message: types.Message, ):
     try:
         message_text_source = message.text.split(" ")
+        if len(message_text_source) == 1:
+            await message.answer(
+                "Вы можете сделать быстрое добавление события если "
+                "введете сообщение \nДАТА\nВРЕМЯ НАЧАЛА\n СОБЫТИЕ. \n"
+                "Пример сообщения\n\n 2024-01-01 "
+                "00:00(это необязательно) Новый год"
+            )
+            return
         date_of_note = message_text_source[0]
 
         if not re.match(
@@ -112,8 +120,7 @@ async def fast_add_note(message: types.Message, ):
             await message.answer(
                 "Вы можете сделать быстрое добавление события если "
                 "введете сообщение \nДАТА\nВРЕМЯ НАЧАЛА\n СОБЫТИЕ. \n"
-                "Пример сообщения\n\n "
-                "2024-01-01 "
+                "Пример сообщения\n\n 2024-01-01 "
                 "00:00(это необязательно) Новый год"
             )
             return
